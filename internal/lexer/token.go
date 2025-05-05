@@ -17,6 +17,14 @@ const (
   SLASH
   STAR
 
+  BANG
+  EQUAL
+  LESS
+  GREATER
+  BANG_EQUAL
+  EQUAL_EQUAL
+  LESS_EQUAL
+  GREATER_EQUAL
 
   IDENTIFIER
   STRING
@@ -43,21 +51,21 @@ const (
 )
 
 type Token struct {
-  tokenType TokenType
-  lexeme    string
-  literal   any
-  line      int
+  TokenType TokenType
+  Lexeme    string
+  Literal   any
+  Line      int
 }
 
 func NewToken(tokenType TokenType, lexeme string, literal any, line int) *Token {
   return &Token{
-    tokenType: tokenType,
-    lexeme: lexeme,
-    literal: literal,
-    line: line,
+    TokenType: tokenType,
+    Lexeme: lexeme,
+    Literal: literal,
+    Line: line,
   }
 }
 
 func (tok *Token) String() string {
-  return fmt.Sprintf("%v %s %v", tok.tokenType, tok.lexeme, tok.literal) 
+  return fmt.Sprintf("[type = %v lexeme = %s literal = %v]", tok.TokenType, tok.Lexeme, tok.Literal) 
 }
