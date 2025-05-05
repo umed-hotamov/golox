@@ -14,7 +14,7 @@ type Lexer struct {
   start    int
   current  int
 
-  hasError bool
+  HasError bool
 }
 
 func NewLexer(source string) *Lexer {
@@ -106,6 +106,8 @@ func (l *Lexer) fetchToken() {
     case '/':
       if l.accept('/') {
         l.skipTo('\n')
+      } else if l.accept('*') {
+        l.acceptBlockComments()
       } else {
         l.addToken(SLASH)
       }
@@ -117,14 +119,60 @@ func (l *Lexer) fetchToken() {
     default:
       if l.isDigit(c) {
         l.acceptNumber()
+      } else if l.isAlpha(c) {
+        l.acceptIdentifier()
       } else {
         l.error("Unexpected character")
       }
   }
 }
 
+func (l *Lexer) isAlpha(c byte) bool {
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' 
+}
+
 func (l *Lexer) isDigit(c byte) bool {
   return c >= '0' && c <= '9'
+}
+
+func (l *Lexer) isAlphaNumeric(c byte) bool {
+  return l.isAlpha(c) || l.isDigit(c)
+}
+
+func (l *Lexer) acceptBlockComments() {
+  depth := 1
+  for !l.eof() && depth > 0 {
+    if l.peek() == '*' && l.peekNext() == '/' {
+      depth -= 1
+      l.advance()
+    } else if l.peek() == '/' && l.peekNext() == '*' {
+      depth += 1
+      l.advance()
+    } else if l.peek() == '\n' {
+      l.incLine()
+    }
+
+    l.advance()
+  }
+
+  if depth > 0 {
+    l.error("Unterminated block comment")
+  }
+}
+
+func (l *Lexer) acceptIdentifier() {
+  for !l.eof() && l.isAlphaNumeric(l.peek()) {
+    l.advance()
+  }
+
+  literal := l.source[l.start:l.current]
+  
+  tokenType, ok := keywords[literal]
+  if !ok {
+    tokenType = IDENTIFIER
+  }
+
+  l.addTokenLiteral(tokenType, literal)
 }
 
 func (l *Lexer) acceptNumber() {
@@ -214,4 +262,5 @@ func (l *Lexer) incLine() {
 
 func (l *Lexer) error(message string) {
   fmt.Printf("[line: %d] Error: %s\n", l.line, message)
+  l.HasError = true
 }
