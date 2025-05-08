@@ -178,7 +178,7 @@ func (l *Lexer) acceptIdentifier() {
 func (l *Lexer) acceptNumber() {
   digits := "0123456789"
   l.acceptRun(digits)
-  if l.accept('.') && !l.isDigit(l.peekNext()) {
+  if l.accept('.') && l.isDigit(l.peek()) {
     l.acceptRun(digits)
   }
 
