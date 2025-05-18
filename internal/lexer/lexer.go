@@ -52,6 +52,8 @@ func (l *Lexer) Lex() []*Token {
     l.start = l.current
     l.fetchToken()
   }
+  
+  l.tokens = append(l.tokens, NewToken(EOF, "", nil, l.line))
 
   return l.tokens
 }
