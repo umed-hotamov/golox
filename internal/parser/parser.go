@@ -1,15 +1,18 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/umed-hotamov/golox/internal/lexer"
 )
 
 type Parser struct {
-  tokens []*lexer.Token
+  tokens     []*lexer.Token
+  statements []Stmt
 
-  current int
+  current    int
+  HasError   bool
 }
 
 func NewParser(tokens []*lexer.Token) *Parser {
@@ -18,52 +21,90 @@ func NewParser(tokens []*lexer.Token) *Parser {
   }
 }
 
-func (p *Parser) Parse() Expr {
+func (p *Parser) Parse() []Stmt {
+  for !p.eof() {
+    p.statements = append(p.statements, p.declaration())
+  }
+  
+  return p.statements
+}
+
+func (p *Parser) declaration() Stmt {
   defer p.errorRecovery()
-  return p.expression()
-}
-
-func (p *Parser) peek() *lexer.Token {
-  return p.tokens[p.current]
-}
-
-func (p *Parser) eof() bool {
-  return p.peek().TokenType == lexer.EOF
-}
-
-func (p *Parser) previous() *lexer.Token {
-  return p.tokens[p.current - 1]
-}
-
-func (p *Parser) advance() *lexer.Token {
-  if !p.eof() {
-    p.current += 1
+  
+  if p.match(lexer.VAR) {
+    return p.varDeclaration()
   }
 
-  return p.previous()
+  return p.statement()
 }
 
-func (p *Parser) check(tokenType lexer.TokenType) bool {
-  if p.eof() {
-    return false
+func (p *Parser) varDeclaration() Stmt {
+  name := p.acceptToken(lexer.IDENTIFIER, "Expect variavle name")
+  
+  var initializer Expr
+  if p.match(lexer.EQUAL) {
+    initializer = p.expression()
   }
+  p.acceptToken(lexer.SEMICOLON, "Expect ; after variable declaration")
 
-  return tokenType == p.peek().TokenType
+  return Var{*name, initializer}
 }
 
-func (p *Parser) match(types... lexer.TokenType) bool {
-  for _, tokenType := range types {
-    if p.check(tokenType) {
-      p.advance()
-      return true
-    }
+func (p *Parser) statement() Stmt {
+  if p.match(lexer.PRINT)      { return p.printStatement() }
+  if p.match(lexer.LEFT_BRACE) { return p.block() }
+
+  return p.expressionStatement()
+}
+
+func (p *Parser) printStatement() Stmt {
+  value := p.expression()
+  p.acceptToken(lexer.SEMICOLON, "Expect ; after value")
+
+  return Print{value}
+}
+
+func (p *Parser) block() Block {
+  var statements []Stmt
+
+  for !p.eof() && !p.check(lexer.RIGHT_BRACE) {
+    statements = append(statements, p.declaration())
   }
 
-  return false
+  p.acceptToken(lexer.RIGHT_BRACE, "Expect '}' after block")
+
+  return Block{statements} 
+}
+
+func (p *Parser) expressionStatement() Stmt {
+  expr := p.expression()
+  p.acceptToken(lexer.SEMICOLON, "Expect ; after expression")
+
+  return Expression{expr}
 }
 
 func (p *Parser) expression() Expr {
-  return p.equality()
+  return p.assignment()
+}
+
+func (p *Parser) assignment() Expr {
+  expr := p.equality()
+
+  if p.match(lexer.EQUAL) {
+    equals := p.previous()
+    value := p.equality()
+
+    switch expr.(type) {
+    case Variable:
+      name := expr.(Variable).Name
+      return Assign{name, value}
+    }
+
+    p.error(equals, errors.New("Invalid assignment target"))
+  }
+
+  return expr
 }
 
 func (p *Parser) equality() Expr {
@@ -73,7 +114,7 @@ func (p *Parser) equality() Expr {
     operator := p.previous()
     right := p.comprasion()
 
-    expr = &Binary{expr, *operator, right}
+    expr = Binary{expr, *operator, right}
   }
 
   return expr
@@ -86,7 +127,7 @@ func (p *Parser) comprasion() Expr {
     operator := p.previous()
     right := p.term()
 
-    expr = &Binary{expr, *operator, right}
+    expr = Binary{expr, *operator, right}
   }
 
   return expr
@@ -99,7 +140,7 @@ func (p *Parser) term() Expr {
     operator := p.previous()
     right := p.factor()
 
-    expr = &Binary{expr, *operator, right}
+    expr = Binary{expr, *operator, right}
   }
 
   return expr
@@ -112,7 +153,7 @@ func (p *Parser) factor() Expr {
     operator := p.previous()
     right := p.unary()
 
-    expr = &Binary{expr, *operator, right}
+    expr = Binary{expr, *operator, right}
   }
 
   return expr
@@ -123,50 +164,66 @@ func (p *Parser) unary() Expr {
     operator := p.previous()
     right := p.unary()
 
-    return &Unary{*operator, right}
+    return Unary{*operator, right}
   }
 
   return p.primary()
 }
 
 func (p *Parser) primary() Expr {
-  if p.match(lexer.TRUE)  { return &Literal{true}  }
-  if p.match(lexer.FALSE) { return &Literal{false} }
-  if p.match(lexer.NIL)   { return &Literal{nil}   }
+  if p.match(lexer.TRUE)  { return Literal{true}  }
+  if p.match(lexer.FALSE) { return Literal{false} }
+  if p.match(lexer.NIL)   { return Literal{nil}   }
   
   if p.match(lexer.NUMBER, lexer.STRING) {
-    return &Literal{p.previous().Literal}
+    return Literal{p.previous().Literal}
+  }
+  if p.match(lexer.IDENTIFIER) {
+    return Variable{*p.previous()}
   }
 
   if p.match(lexer.LEFT_PAREN) {
     expr := p.expression()
     p.acceptToken(lexer.RIGHT_PAREN, "Expect ')' after expression")
-    return &Grouping{expr}
+    return Grouping{expr}
   }
   
-  p.parseError(p.peek(), "Expect expression")
+  p.parseError("Expect expression")
   return nil
-}
-
-func (p *Parser) acceptToken(tokenType lexer.TokenType, message string) {
-  if p.check(tokenType) {
-    p.advance()
-    return
-  }
-
-  p.parseError(p.peek(), message)
-}
-
-func (p *Parser) parseError(token *lexer.Token, message string) {
-  panic(message)
 }
 
 func (p *Parser) errorRecovery() {
   if err := recover(); err != nil {
     p.error(p.peek(), fmt.Errorf("%v", err))
+    p.synchronize()
   }
 }
 
-func (p *Parser) error(token *lexer.Token, err error) {
-  fmt.Printf("[line: %d] Error: %s\n", token.Line, err.Error())
+func (p *Parser) synchronize() {
+  p.advance()
+
+  for !p.eof() {
+    if p.previous().TokenType == lexer.SEMICOLON {
+      return
+    }
+    switch p.peek().TokenType {
+    case lexer.IF:
+      return
+    case lexer.VAR:
+      return
+    case lexer.FUN:
+      return
+    case lexer.FOR:
+      return
+    case lexer.WHILE:
+      return
+    case lexer.PRINT:
+      return
+    case lexer.CLASS:
+      return
+    case lexer.RETURN:
+      return
+    }
+    p.advance()
+  }
 }
