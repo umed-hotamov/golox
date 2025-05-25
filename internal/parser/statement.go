@@ -23,8 +23,19 @@ type Var struct {
   Initializer Expr
 }
 
+type If struct {
+  Condition  Expr
+  ThenBranch Stmt
+  ElseBranch Stmt
+}
+
 type Block struct {
   Statements []Stmt
+}
+
+type While struct {
+  Condition Expr
+  Body      Stmt
 }
 
 func (e Expression) String() string {
@@ -49,4 +60,12 @@ func (b Block) String() string {
   str += b.Statements[i].String()
 
   return str
+}
+
+func (i If) String() string {
+  return ""
+}
+
+func (w While) String() string {
+  return ""
 }
