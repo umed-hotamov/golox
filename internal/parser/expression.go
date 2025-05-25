@@ -29,21 +29,48 @@ type Unary struct {
   Right    Expr
 }
 
-func (b *Binary) String() string {
+type Variable struct {
+  Name lexer.Token
+}
+
+type Assign struct {
+  Name  lexer.Token
+  Value Expr
+}
+
+type Logical struct {
+  Left     Expr
+  Operator lexer.Token
+  Right    Expr
+}
+
+func (b Binary) String() string {
   return fmt.Sprintf("(%v %v %v)", b.Operator.Lexeme, b.Left.String(), b.Right.String())
 }
 
-func (g *Grouping) String() string {
+func (g Grouping) String() string {
   return fmt.Sprintf("(group %v)", g.Expr.String())
 }
 
-func (l *Literal) String() string {
+func (l Literal) String() string {
   if l.Value == nil {
     return "nil"
   }
   return fmt.Sprintf("%v", l.Value)
 }
 
-func (u *Unary) String() string {
+func (u Unary) String() string {
   return fmt.Sprintf("(%v %v)", u.Operator.Lexeme, u.Right.String())
+}
+
+func (v Variable) String() string {
+  return fmt.Sprint(v.Name.Lexeme)
+}
+
+func (a Assign) String() string {
+  return fmt.Sprintf("(%v %v)", a.Value.String(), a.Name)
+}
+
+func (l Logical) String() string {
+  return fmt.Sprintf("%v %v %v", l.Left.String(), l.Operator.Lexeme, l.Right.String())
 }
