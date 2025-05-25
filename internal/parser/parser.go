@@ -53,10 +53,10 @@ func (p *Parser) varDeclaration() Stmt {
 
 func (p *Parser) statement() Stmt {
   if p.match(lexer.PRINT)      { return p.printStatement() }
-  if p.match(lexer.LEFT_BRACE) { return p.block() }
-  if p.match(lexer.IF)         { return p.ifStatement() }
+  if p.match(lexer.LEFT_BRACE) { return p.block()          }
+  if p.match(lexer.IF)         { return p.ifStatement()    }
   if p.match(lexer.WHILE)      { return p.whileStatement() }
-  if p.match(lexer.FOR)        { return p.forStatement() }
+  if p.match(lexer.FOR)        { return p.forStatement()   }
 
   return p.expressionStatement()
 }
