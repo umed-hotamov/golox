@@ -298,22 +298,8 @@ func (p *Parser) synchronize() {
       return
     }
     switch p.peek().TokenType {
-    case lexer.IF:
-      return
-    case lexer.VAR:
-      return
-    case lexer.FUN:
-      return
-    case lexer.FOR:
-      return
-    case lexer.WHILE:
-      return
-    case lexer.PRINT:
-      return
-    case lexer.CLASS:
-      return
-    case lexer.RETURN:
-      return
+    case lexer.IF, lexer.VAR, lexer.FUN, lexer.FOR,
+         lexer.WHILE, lexer.PRINT, lexer.CLASS, lexer.RETURN:
     }
     p.advance()
   }
