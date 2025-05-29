@@ -11,11 +11,13 @@ type Callable interface {
 
 type Function struct {
   declaration parser.Function
+  closure     *Environment
 }
 
-func NewFunction(declaration parser.Function) *Function {
+func NewFunction(declaration parser.Function, closure *Environment) *Function {
   return &Function{
     declaration: declaration,
+    closure:     closure,
   }
 }
 
@@ -23,14 +25,19 @@ func (f *Function) arity() int {
   return len(f.declaration.Params)
 }
 
-func (f *Function) call(interpreter *Interpreter, arguments[] any) any {
-  env := NewEnclosingEnvironment(interpreter.globals)
+func (f *Function) call(interpreter *Interpreter, arguments[] any) (value any) {
+  env := NewEnclosingEnvironment(f.closure)
   
   for i := 0; i < len(f.declaration.Params); i += 1 {
     env.define(f.declaration.Params[i].Lexeme, arguments[i])
   }
   
-  interpreter.executeBlockStmt(f.declaration.Body, env)
+  defer func() {
+    if r := recover(); r != nil {
+       value = r
+    }
+  }()
 
-  return nil
+  interpreter.executeBlockStmt(f.declaration.Body, env)
+  return 
 }
