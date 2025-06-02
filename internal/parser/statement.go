@@ -38,6 +38,17 @@ type While struct {
   Body      Stmt
 }
 
+type Function struct {
+  Name    lexer.Token
+  Params  []lexer.Token
+  Body    Block
+}
+
+type Return struct {
+  Keyword lexer.Token
+  Value   Expr
+}
+
 func (e Expression) String() string {
   return e.Expression.String() + ";"
 }
@@ -68,4 +79,12 @@ func (i If) String() string {
 
 func (w While) String() string {
   return ""
+}
+
+func (f Function) String() string {
+  return fmt.Sprintf("fun %v", f.Name.Lexeme)
+}
+
+func (r Return) String() string {
+  return fmt.Sprintf("return %v", r.Value.String())
 }
