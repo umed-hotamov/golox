@@ -44,6 +44,12 @@ type Logical struct {
   Right    Expr
 }
 
+type Call struct {
+  Callee    Expr
+  Paren     lexer.Token
+  Arguments []Expr
+}
+
 func (b Binary) String() string {
   return fmt.Sprintf("(%v %v %v)", b.Operator.Lexeme, b.Left.String(), b.Right.String())
 }
@@ -73,4 +79,15 @@ func (a Assign) String() string {
 
 func (l Logical) String() string {
   return fmt.Sprintf("%v %v %v", l.Left.String(), l.Operator.Lexeme, l.Right.String())
+}
+
+func (c Call) String() string {
+  s := fmt.Sprintf("%v", c.Callee.String())
+  s += "("
+  for _, a := range c.Arguments {
+    s += a.String()
+  }
+  s += ")"
+
+  return s
 }
