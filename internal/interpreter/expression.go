@@ -1,8 +1,10 @@
 package interpreter
-	
-import ( 
+
+import (
+	"fmt"
+
 	"github.com/umed-hotamov/golox/internal/lexer"
-  "github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/parser"
 )
 
 func (i *Interpreter) evaluate(expression parser.Expr) any {
@@ -21,6 +23,8 @@ func (i *Interpreter) evaluate(expression parser.Expr) any {
     return i.evaluateAssign(expression.(parser.Assign))
   case parser.Logical:
     return i.evaluateLogical(expression.(parser.Logical))
+  case parser.Call:
+    return i.evaluateCall(expression.(parser.Call))
   }
 
   return nil
@@ -108,4 +112,23 @@ func (i *Interpreter) evaluateLogical(expression parser.Logical) any {
   }
 
   return i.evaluate(expression.Right)
+}
+
+func (i *Interpreter) evaluateCall(expression parser.Call) any {
+  callee := i.evaluate(expression.Callee)
+
+  var arguments []any
+  for _, arg := range expression.Arguments {
+    arguments = append(arguments, i.evaluate(arg))
+  }
+  _, ok := callee.(Callable)
+  if !ok {
+    runtimeError(expression.Paren, "Call only  call functions and classes")
+  }
+  function := callee.(Callable)
+  if function.arity() != len(arguments) {
+    runtimeError(expression.Paren, fmt.Sprintf("Expected %d, arguments got %d", function.arity(), len(arguments)))
+  }
+
+  return function.call(i, arguments)
 }
