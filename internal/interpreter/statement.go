@@ -20,6 +20,10 @@ func (i *Interpreter) execute(statement parser.Stmt) {
     i.executeIfStmt(statement.(parser.If))
   case parser.While:
     i.executeWhileStmt(statement.(parser.While))
+  case parser.Function:
+    i.executeFunctionStmt(statement.(parser.Function))
+  case parser.Return:
+    i.executeReturnStmt(statement.(parser.Return))
   }
 }
 
@@ -72,4 +76,18 @@ func (i *Interpreter) executeWhileStmt(statement parser.While) {
   for isTruthy(i.evaluate(statement.Condition)) {
     i.execute(statement.Body)
   }
+}
+
+func (i *Interpreter) executeFunctionStmt(statement parser.Function) {
+  function := NewFunction(statement, i.env)
+  i.env.define(statement.Name.Lexeme, function)
+}
+
+func (i *Interpreter) executeReturnStmt(statement parser.Return) {
+  var value any
+  if statement.Value != nil {
+    value = i.evaluate(statement.Value)
+  }
+
+  panic(value)
 }
