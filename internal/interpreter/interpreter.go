@@ -8,12 +8,18 @@ import (
 )
 
 type Interpreter struct {
-  env *Environment
+  env     *Environment
+  globals *Environment
 }
 
 func NewInterpreter() *Interpreter {
+  globals := NewEnvironment()
+
+  globals.define("clock", new(Clock))
+
   return &Interpreter{
-    env: NewEnvironment(),
+    env:     globals,
+    globals: globals,
   }
 }
 
