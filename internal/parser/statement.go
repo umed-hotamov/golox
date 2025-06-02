@@ -7,84 +7,84 @@ import (
 )
 
 type Stmt interface {
-  String() string
+	String() string
 }
 
 type Expression struct {
-  Expression Expr
+	Expression Expr
 }
 
 type Print struct {
-  Expression Expr
+	Expression Expr
 }
 
 type Var struct {
-  Name        lexer.Token
-  Initializer Expr
+	Name        lexer.Token
+	Initializer Expr
 }
 
 type If struct {
-  Condition  Expr
-  ThenBranch Stmt
-  ElseBranch Stmt
+	Condition  Expr
+	ThenBranch Stmt
+	ElseBranch Stmt
 }
 
 type Block struct {
-  Statements []Stmt
+	Statements []Stmt
 }
 
 type While struct {
-  Condition Expr
-  Body      Stmt
+	Condition Expr
+	Body      Stmt
 }
 
 type Function struct {
-  Name    lexer.Token
-  Params  []lexer.Token
-  Body    Block
+	Name   lexer.Token
+	Params []lexer.Token
+	Body   Block
 }
 
 type Return struct {
-  Keyword lexer.Token
-  Value   Expr
+	Keyword lexer.Token
+	Value   Expr
 }
 
 func (e Expression) String() string {
-  return e.Expression.String() + ";"
+	return e.Expression.String() + ";"
 }
 
 func (p Print) String() string {
-  return fmt.Sprintf("print %v", p.Expression.String())
+	return fmt.Sprintf("print %v", p.Expression.String())
 }
 
 func (v Var) String() string {
-  return fmt.Sprintf("var %v = %v;", v.Name, v.Initializer.String())
+	return fmt.Sprintf("var %v = %v;", v.Name, v.Initializer.String())
 }
 
 func (b Block) String() string {
-  var str string
+	var str string
 
-  var i int
-  for ; i < len(b.Statements) - 1; i += 1 {
-    str += b.Statements[i].String() + "\n"
-  }
-  str += b.Statements[i].String()
+	var i int
+	for ; i < len(b.Statements)-1; i += 1 {
+		str += b.Statements[i].String() + "\n"
+	}
+	str += b.Statements[i].String()
 
-  return str
+	return str
 }
 
 func (i If) String() string {
-  return ""
+	return ""
 }
 
 func (w While) String() string {
-  return ""
+	return ""
 }
 
 func (f Function) String() string {
-  return fmt.Sprintf("fun %v", f.Name.Lexeme)
+	return fmt.Sprintf("fun %v", f.Name.Lexeme)
 }
 
 func (r Return) String() string {
-  return fmt.Sprintf("return %v", r.Value.String())
+	return fmt.Sprintf("return %v", r.Value.String())
 }
