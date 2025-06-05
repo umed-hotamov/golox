@@ -3,7 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/umed-hotamov/golox/internal/interpreter"
+	"github.com/umed-hotamov/golox/internal/lexer"
+	"github.com/umed-hotamov/golox/internal/parser"
 )
 
 func main() {
@@ -12,33 +17,57 @@ func main() {
   if len(args) > 1 {
     fmt.Println("Usage: glox [source]")
   }
-
+  
   if len(args) == 1 {
-    runFile(args[1])
+    runFile(args[0])
   } else {
     runPrompt()
   }
 }
 
 func runFile(filename string) {
+  data, err := os.ReadFile(filename)
+  if err != nil {
+    log.Fatalf("failed to read file: %s", err)
+  }
+  source := string(data)
 
+  interpreter := interpreter.NewInterpreter()
+  run(source, interpreter)
 }
 
 func runPrompt() {
   scanner := bufio.NewScanner(os.Stdin)
+  interpreter := interpreter.NewInterpreter()
   
   for {
-    fmt.Print("~> ")
+    fmt.Print("golox~~>  ")
     
-    line := scanner.Scan()
-    if !line {
+    isNotEnd := scanner.Scan()
+    if !isNotEnd {
       return
     }
+    line := scanner.Text()
+    if line == "exit" {
+      break
+    }
 
-    run()
+    run(line, interpreter)
   }
 }
 
-func run() {
+func run(source string, interpreter *interpreter.Interpreter) {
+  lexer := lexer.NewLexer(source)
+  tokens := lexer.Lex()
 
+  parser := parser.NewParser(tokens)
+  statements := parser.Parse()
+  if lexer.HasError {
+    return
+  }
+  if parser.HasError {
+    return
+  }
+
+  interpreter.Interpret(statements)
 }
