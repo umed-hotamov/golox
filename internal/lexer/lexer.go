@@ -7,25 +7,29 @@ import (
 )
 
 type Lexer struct {
-  source   string
-  tokens   []*Token
+  source      string
+  tokens      []*Token
 
-  line     int
-  start    int
-  current  int
+  line        int
+  lineStart   int
+  
+  startColumn int
+  
+  start       int
+  current     int
 
-  HasError bool
+  HasError    bool
 }
 
 func NewLexer(source string) *Lexer {
   tokens := make([]*Token, 0)
-
   return &Lexer{
     source: source,
     tokens: tokens,
     line: 1,
   }
 }
+
 
 var keywords = map[string]TokenType{
   "and":    AND,
@@ -50,6 +54,7 @@ func (l *Lexer) Lex() []*Token {
   for !l.eof() {
 
     l.start = l.current
+    l.lineStart = l.line
     l.fetchToken()
   }
   
@@ -116,7 +121,8 @@ func (l *Lexer) fetchToken() {
     case '"':
       l.acceptString()
     case '\n':
-      l.incLine()
+      l.startColumn = l.current
+      l.line += 1
     case ' ', '\r', '\t':
     default:
       if l.isDigit(c) {
@@ -151,7 +157,8 @@ func (l *Lexer) acceptBlockComments() {
       depth += 1
       l.advance()
     } else if l.peek() == '\n' {
-      l.incLine()
+      l.line += 1
+      l.startColumn = l.current + 1
     }
 
     l.advance()
@@ -217,7 +224,8 @@ func (l *Lexer) acceptRun(valid string) {
 func (l *Lexer) skipTo(to byte) {
   for !l.eof() && l.peek() != to {
     if l.peek() == '\n' {
-      l.incLine()
+      l.line += 1
+      l.startColumn = l.current + 1
     }
     l.advance()
   }
@@ -258,11 +266,9 @@ func (l *Lexer) addTokenLiteral(tokenType TokenType, literal any) {
   l.tokens = append(l.tokens, NewToken(tokenType, lexeme, literal, l.line))
 }
 
-func (l *Lexer) incLine() {
-  l.line += 1
-}
-
 func (l *Lexer) error(message string) {
-  fmt.Printf("[line: %d] Error: %s\n", l.line, message)
+  fmt.Printf("[line: %d, column: %d] Error: %s\n", l.lineStart, l.current - l.startColumn, message)
+  fmt.Printf("|   %c\n", l.source[l.start])
+  fmt.Printf("|---^\n")
   l.HasError = true
 }
