@@ -13,9 +13,8 @@ type Lexer struct {
   line        int
   lineStart   int
   
-  startColumn int
-  
   start       int
+  startColumn int
   current     int
 
   HasError    bool
@@ -158,7 +157,7 @@ func (l *Lexer) acceptBlockComments() {
       l.advance()
     } else if l.peek() == '\n' {
       l.line += 1
-      l.startColumn = l.current + 1
+      l.startColumn = l.current
     }
 
     l.advance()
@@ -225,7 +224,7 @@ func (l *Lexer) skipTo(to byte) {
   for !l.eof() && l.peek() != to {
     if l.peek() == '\n' {
       l.line += 1
-      l.startColumn = l.current + 1
+      l.startColumn = l.current
     }
     l.advance()
   }
