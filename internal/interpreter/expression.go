@@ -4,41 +4,41 @@ import (
 	"fmt"
 
 	"github.com/umed-hotamov/golox/internal/lexer"
-	"github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/ast"
 )
 
-func (i *Interpreter) evaluate(expression parser.Expr) any {
+func (i *Interpreter) evaluate(expression ast.Expr) any {
   switch expression.(type) {
-  case parser.Literal:
-    return i.evaluateLiteral(expression.(parser.Literal))
-  case parser.Grouping:
-    return i.evaluateGrouping(expression.(parser.Grouping))
-  case parser.Unary:
-    return i.evaluateUnary(expression.(parser.Unary))
-  case parser.Binary:
-    return i.evaluateBinary(expression.(parser.Binary))
-  case parser.Variable:
-    return i.evaluateVariable(expression.(parser.Variable))
-  case parser.Assign:
-    return i.evaluateAssign(expression.(parser.Assign))
-  case parser.Logical:
-    return i.evaluateLogical(expression.(parser.Logical))
-  case parser.Call:
-    return i.evaluateCall(expression.(parser.Call))
+  case ast.Literal:
+    return i.evaluateLiteral(expression.(ast.Literal))
+  case ast.Grouping:
+    return i.evaluateGrouping(expression.(ast.Grouping))
+  case ast.Unary:
+    return i.evaluateUnary(expression.(ast.Unary))
+  case ast.Binary:
+    return i.evaluateBinary(expression.(ast.Binary))
+  case ast.Variable:
+    return i.evaluateVariable(expression.(ast.Variable))
+  case ast.Assign:
+    return i.evaluateAssign(expression.(ast.Assign))
+  case ast.Logical:
+    return i.evaluateLogical(expression.(ast.Logical))
+  case ast.Call:
+    return i.evaluateCall(expression.(ast.Call))
   }
 
   return nil
 }
 
-func (i *Interpreter) evaluateLiteral(expression parser.Literal) any {
+func (i *Interpreter) evaluateLiteral(expression ast.Literal) any {
   return expression.Value
 }
 
-func (i *Interpreter) evaluateGrouping(expression parser.Grouping) any {
+func (i *Interpreter) evaluateGrouping(expression ast.Grouping) any {
   return i.evaluate(expression.Expr)
 }
 
-func (i *Interpreter) evaluateUnary(expression parser.Unary) any {
+func (i *Interpreter) evaluateUnary(expression ast.Unary) any {
   right := i.evaluate(expression.Right)
 
   switch expression.Operator.TokenType {
@@ -51,7 +51,7 @@ func (i *Interpreter) evaluateUnary(expression parser.Unary) any {
   return nil
 }
 
-func (i *Interpreter) evaluateBinary(expression parser.Binary) any {
+func (i *Interpreter) evaluateBinary(expression ast.Binary) any {
   left := i.evaluate(expression.Left)
   right := i.evaluate(expression.Right)
 
@@ -88,18 +88,18 @@ func (i *Interpreter) evaluateBinary(expression parser.Binary) any {
   return nil
 }
 
-func (i *Interpreter) evaluateVariable(expression parser.Variable) any {
+func (i *Interpreter) evaluateVariable(expression ast.Variable) any {
   return i.env.get(expression.Name)
 }
 
-func (i *Interpreter) evaluateAssign(expression parser.Assign) any {
+func (i *Interpreter) evaluateAssign(expression ast.Assign) any {
   value := i.evaluate(expression.Value)
   i.env.assign(expression.Name, value)
   
   return value
 }
 
-func (i *Interpreter) evaluateLogical(expression parser.Logical) any {
+func (i *Interpreter) evaluateLogical(expression ast.Logical) any {
   left := i.evaluate(expression.Left)
   if expression.Operator.TokenType == lexer.OR {
     if isTruthy(left) {
@@ -114,7 +114,7 @@ func (i *Interpreter) evaluateLogical(expression parser.Logical) any {
   return i.evaluate(expression.Right)
 }
 
-func (i *Interpreter) evaluateCall(expression parser.Call) any {
+func (i *Interpreter) evaluateCall(expression ast.Call) any {
   callee := i.evaluate(expression.Callee)
 
   var arguments []any

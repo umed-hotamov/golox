@@ -3,35 +3,35 @@ package interpreter
 import (
 	"fmt"
 
-	"github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/ast"
 )
 
-func (i *Interpreter) execute(statement parser.Stmt) {
+func (i *Interpreter) execute(statement ast.Stmt) {
   switch statement.(type) {
-  case parser.Expression:
-    i.executeExpressionStmt(statement.(parser.Expression))
-  case parser.Print:
-    i.executePrintStmt(statement.(parser.Print))
-  case parser.Var:
-    i.executeVarStmt(statement.(parser.Var))
-  case parser.Block:
-    i.executeBlockStmt(statement.(parser.Block), NewEnclosingEnvironment(i.env))
-  case parser.If:
-    i.executeIfStmt(statement.(parser.If))
-  case parser.While:
-    i.executeWhileStmt(statement.(parser.While))
-  case parser.Function:
-    i.executeFunctionStmt(statement.(parser.Function))
-  case parser.Return:
-    i.executeReturnStmt(statement.(parser.Return))
+  case ast.Expression:
+    i.executeExpressionStmt(statement.(ast.Expression))
+  case ast.Print:
+    i.executePrintStmt(statement.(ast.Print))
+  case ast.Var:
+    i.executeVarStmt(statement.(ast.Var))
+  case ast.Block:
+    i.executeBlockStmt(statement.(ast.Block), NewEnclosingEnvironment(i.env))
+  case ast.If:
+    i.executeIfStmt(statement.(ast.If))
+  case ast.While:
+    i.executeWhileStmt(statement.(ast.While))
+  case ast.Function:
+    i.executeFunctionStmt(statement.(ast.Function))
+  case ast.Return:
+    i.executeReturnStmt(statement.(ast.Return))
   }
 }
 
-func (i *Interpreter) executeExpressionStmt(statement parser.Expression) {
+func (i *Interpreter) executeExpressionStmt(statement ast.Expression) {
   i.evaluate(statement.Expression)
 }
 
-func (i *Interpreter) executePrintStmt(statement parser.Print) {
+func (i *Interpreter) executePrintStmt(statement ast.Print) {
   value := i.evaluate(statement.Expression)
 
   if value == nil {
@@ -42,7 +42,7 @@ func (i *Interpreter) executePrintStmt(statement parser.Print) {
   fmt.Println(value)
 }
 
-func (i *Interpreter) executeVarStmt(statement parser.Var) {
+func (i *Interpreter) executeVarStmt(statement ast.Var) {
   var value any = nil
   if statement.Initializer != nil {
     value = i.evaluate(statement.Initializer)
@@ -51,7 +51,7 @@ func (i *Interpreter) executeVarStmt(statement parser.Var) {
   i.env.define(statement.Name.Lexeme, value)
 }
 
-func (i *Interpreter) executeBlockStmt(statement parser.Block, env *Environment) {
+func (i *Interpreter) executeBlockStmt(statement ast.Block, env *Environment) {
   previous := i.env
   i.env = env
 
@@ -64,7 +64,7 @@ func (i *Interpreter) executeBlockStmt(statement parser.Block, env *Environment)
   } 
 }
 
-func (i *Interpreter) executeIfStmt(statement parser.If) {
+func (i *Interpreter) executeIfStmt(statement ast.If) {
   if isTruthy(i.evaluate(statement.Condition)) {
     i.execute(statement.ThenBranch)
   } else if statement.ElseBranch != nil {
@@ -72,18 +72,18 @@ func (i *Interpreter) executeIfStmt(statement parser.If) {
   }
 }
 
-func (i *Interpreter) executeWhileStmt(statement parser.While) {
+func (i *Interpreter) executeWhileStmt(statement ast.While) {
   for isTruthy(i.evaluate(statement.Condition)) {
     i.execute(statement.Body)
   }
 }
 
-func (i *Interpreter) executeFunctionStmt(statement parser.Function) {
+func (i *Interpreter) executeFunctionStmt(statement ast.Function) {
   function := NewFunction(statement, i.env)
   i.env.define(statement.Name.Lexeme, function)
 }
 
-func (i *Interpreter) executeReturnStmt(statement parser.Return) {
+func (i *Interpreter) executeReturnStmt(statement ast.Return) {
   var value any
   if statement.Value != nil {
     value = i.evaluate(statement.Value)

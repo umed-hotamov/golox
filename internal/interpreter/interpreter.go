@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/umed-hotamov/golox/internal/lexer"
-	"github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/ast"
 )
 
 type Interpreter struct {
@@ -23,7 +23,7 @@ func NewInterpreter() *Interpreter {
   }
 }
 
-func (i *Interpreter) Interpret(statements []parser.Stmt) {
+func (i *Interpreter) Interpret(statements []ast.Stmt) {
   defer errorRecovery()
 
   for _, stmt := range statements {

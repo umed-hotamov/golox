@@ -1,7 +1,7 @@
 package interpreter
 
 import (
-	"github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/ast"
 )
 
 type Callable interface {
@@ -10,11 +10,11 @@ type Callable interface {
 }
 
 type Function struct {
-  declaration parser.Function
+  declaration ast.Function
   closure     *Environment
 }
 
-func NewFunction(declaration parser.Function, closure *Environment) *Function {
+func NewFunction(declaration ast.Function, closure *Environment) *Function {
   return &Function{
     declaration: declaration,
     closure:     closure,
