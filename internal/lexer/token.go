@@ -55,17 +55,19 @@ type Token struct {
   Lexeme    string
   Literal   any
   Line      int
+  Column    int
 }
 
-func NewToken(tokenType TokenType, lexeme string, literal any, line int) *Token {
+func NewToken(tokenType TokenType, lexeme string, literal any, line int, column int) *Token {
   return &Token{
     TokenType: tokenType,
-    Lexeme: lexeme,
-    Literal: literal,
-    Line: line,
+    Lexeme:    lexeme,
+    Literal:   literal,
+    Line:      line,
+    Column:    column,
   }
 }
 
 func (tok *Token) String() string {
-  return fmt.Sprintf("[type = %v lexeme = %s literal = %v line = %d]", tok.TokenType, tok.Lexeme, tok.Literal, tok.Line) 
+  return fmt.Sprintf("[type = %v lexeme = %s literal = %v line = %d column = %d]", tok.TokenType, tok.Lexeme, tok.Literal, tok.Line, tok.Column) 
 }
