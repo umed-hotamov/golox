@@ -38,6 +38,6 @@ func (f *Function) call(interpreter *Interpreter, arguments[] any) (value any) {
     }
   }()
 
-  interpreter.executeBlockStmt(f.declaration.Body, env)
+  interpreter.executeBlock(f.declaration.Body, env)
   return 
 }

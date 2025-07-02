@@ -9,29 +9,29 @@ import (
 func (i *Interpreter) execute(statement ast.Stmt) {
   switch statement.(type) {
   case ast.Expression:
-    i.executeExpressionStmt(statement.(ast.Expression))
+    i.executeExpression(statement.(ast.Expression))
   case ast.Print:
-    i.executePrintStmt(statement.(ast.Print))
+    i.executePrint(statement.(ast.Print))
   case ast.Var:
-    i.executeVarStmt(statement.(ast.Var))
+    i.executeVar(statement.(ast.Var))
   case ast.Block:
-    i.executeBlockStmt(statement.(ast.Block), NewEnclosingEnvironment(i.env))
+    i.executeBlock(statement.(ast.Block), NewEnclosingEnvironment(i.env))
   case ast.If:
-    i.executeIfStmt(statement.(ast.If))
+    i.executeIf(statement.(ast.If))
   case ast.While:
-    i.executeWhileStmt(statement.(ast.While))
+    i.executeWhile(statement.(ast.While))
   case ast.Function:
-    i.executeFunctionStmt(statement.(ast.Function))
+    i.executeFunction(statement.(ast.Function))
   case ast.Return:
-    i.executeReturnStmt(statement.(ast.Return))
+    i.executeReturn(statement.(ast.Return))
   }
 }
 
-func (i *Interpreter) executeExpressionStmt(statement ast.Expression) {
+func (i *Interpreter) executeExpression(statement ast.Expression) {
   i.evaluate(statement.Expression)
 }
 
-func (i *Interpreter) executePrintStmt(statement ast.Print) {
+func (i *Interpreter) executePrint(statement ast.Print) {
   value := i.evaluate(statement.Expression)
 
   if value == nil {
@@ -42,7 +42,7 @@ func (i *Interpreter) executePrintStmt(statement ast.Print) {
   fmt.Println(value)
 }
 
-func (i *Interpreter) executeVarStmt(statement ast.Var) {
+func (i *Interpreter) executeVar(statement ast.Var) {
   var value any = nil
   if statement.Initializer != nil {
     value = i.evaluate(statement.Initializer)
@@ -51,7 +51,7 @@ func (i *Interpreter) executeVarStmt(statement ast.Var) {
   i.env.define(statement.Name.Lexeme, value)
 }
 
-func (i *Interpreter) executeBlockStmt(statement ast.Block, env *Environment) {
+func (i *Interpreter) executeBlock(statement ast.Block, env *Environment) {
   previous := i.env
   i.env = env
 
@@ -64,7 +64,7 @@ func (i *Interpreter) executeBlockStmt(statement ast.Block, env *Environment) {
   } 
 }
 
-func (i *Interpreter) executeIfStmt(statement ast.If) {
+func (i *Interpreter) executeIf(statement ast.If) {
   if isTruthy(i.evaluate(statement.Condition)) {
     i.execute(statement.ThenBranch)
   } else if statement.ElseBranch != nil {
@@ -72,18 +72,18 @@ func (i *Interpreter) executeIfStmt(statement ast.If) {
   }
 }
 
-func (i *Interpreter) executeWhileStmt(statement ast.While) {
+func (i *Interpreter) executeWhile(statement ast.While) {
   for isTruthy(i.evaluate(statement.Condition)) {
     i.execute(statement.Body)
   }
 }
 
-func (i *Interpreter) executeFunctionStmt(statement ast.Function) {
+func (i *Interpreter) executeFunction(statement ast.Function) {
   function := NewFunction(statement, i.env)
   i.env.define(statement.Name.Lexeme, function)
 }
 
-func (i *Interpreter) executeReturnStmt(statement ast.Return) {
+func (i *Interpreter) executeReturn(statement ast.Return) {
   var value any
   if statement.Value != nil {
     value = i.evaluate(statement.Value)

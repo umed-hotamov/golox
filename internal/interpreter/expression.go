@@ -123,7 +123,7 @@ func (i *Interpreter) evaluateCall(expression ast.Call) any {
   }
   _, ok := callee.(Callable)
   if !ok {
-    runtimeError(expression.Paren, "Call only  call functions and classes")
+    runtimeError(expression.Paren, "Call only call functions and classes")
   }
   function := callee.(Callable)
   if function.arity() != len(arguments) {
