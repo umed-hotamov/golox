@@ -1,6 +1,8 @@
 package resolver
 
 import (
+	"fmt"
+
 	"github.com/umed-hotamov/golox/internal/ast"
 	"github.com/umed-hotamov/golox/internal/interpreter"
 	"github.com/umed-hotamov/golox/internal/lexer"
@@ -9,6 +11,7 @@ import (
 type Resolver struct {
   interpreter *interpreter.Interpreter
   scopes      *Stack
+  hasError    bool
 }
 
 func NewResolver(interpreter *interpreter.Interpreter) *Resolver {
@@ -37,8 +40,8 @@ func (r *Resolver) declare(name lexer.Token) {
     return
   }
 
-  scope := r.scopes.Peek()
-  scope.(map[string]bool)[name.Lexeme] = false
+  scope := r.scopes.Peek().(map[string]bool)
+  scope[name.Lexeme] = false
 }
 
 func (r *Resolver) define(name lexer.Token) {
@@ -46,6 +49,21 @@ func (r *Resolver) define(name lexer.Token) {
     return
   }
 
-  scope := r.scopes.Peek()
-  scope.(map[string]bool)[name.Lexeme] = true
+  scope := r.scopes.Peek().(map[string]bool)
+  scope[name.Lexeme] = true
+}
+
+func (r *Resolver) resolveLocal(expression ast.Expr, name lexer.Token) {
+  for i := r.scopes.Size() - 1; i >= 0; i-- {
+    scope := r.scopes.Get(i).(map[string]bool)
+    if _, ok := scope[name.Lexeme]; ok {
+      r.interpreter.Resolve(expression, r.scopes.Size() - 1 - i)
+      return
+    }
+  }
+}
+
+func (r *Resolver) error(token lexer.Token, message string) {
+	fmt.Printf("[line: %d] Error: %s\n", token.Line, message)
+  r.hasError = true
 }
