@@ -5,6 +5,7 @@ import "github.com/umed-hotamov/golox/internal/ast"
 func (r *Resolver) resolveExpression(expression ast.Expr) {
 	switch expression.(type) {
 	case ast.Variable:
+    r.resolveVariable(expression.(ast.Variable))
 	}
 }
 
