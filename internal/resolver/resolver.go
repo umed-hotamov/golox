@@ -11,14 +11,14 @@ import (
 type FunctionType int
 
 const (
-  NONE      FunctionType = iota
-  FUNCTION
-) 
+	NONE FunctionType = iota
+	FUNCTION
+)
 
 type Resolver struct {
 	interpreter     *interpreter.Interpreter
 	scopes          *Stack
-  currentFunction FunctionType
+	currentFunction FunctionType
 	HasError        bool
 }
 
@@ -26,7 +26,7 @@ func NewResolver(interpreter *interpreter.Interpreter) *Resolver {
 	return &Resolver{
 		interpreter:     interpreter,
 		scopes:          NewStack(),
-    currentFunction: NONE,
+		currentFunction: NONE,
 	}
 }
 
@@ -50,9 +50,9 @@ func (r *Resolver) declare(name lexer.Token) {
 	}
 
 	scope := r.scopes.Peek().(map[string]bool)
-  if _, ok := scope[name.Lexeme]; ok {
-    r.error(name, "Already variable with this name in this scope")
-  }
+	if _, ok := scope[name.Lexeme]; ok {
+		r.error(name, "Already variable with this name in this scope")
+	}
 
 	scope[name.Lexeme] = false
 }
