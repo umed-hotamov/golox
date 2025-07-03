@@ -10,6 +10,7 @@ import (
 type Interpreter struct {
   env     *Environment
   globals *Environment
+  locals  map[ast.Expr]int
 }
 
 func NewInterpreter() *Interpreter {
@@ -20,6 +21,7 @@ func NewInterpreter() *Interpreter {
   return &Interpreter{
     env:     globals,
     globals: globals,
+    locals:  make(map[ast.Expr]int),
   }
 }
 
@@ -29,6 +31,10 @@ func (i *Interpreter) Interpret(statements []ast.Stmt) {
   for _, stmt := range statements {
     i.execute(stmt)
   }
+}
+
+func (i *Interpreter) Resolve(expression ast.Expr, depth int) {
+  i.locals[expression] = depth
 }
 
 func isTruthy(value any) bool {
