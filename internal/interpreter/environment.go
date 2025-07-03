@@ -39,6 +39,25 @@ func (e *Environment) get(token lexer.Token) any {
   panic(fmt.Sprintf("Undefined variable %s\n", token.Lexeme))
 }
 
+func (e *Environment) getAt(distance int, value string) any {
+  ancestor := e.ancestor(distance)
+  return ancestor.objects[value]
+}
+
+func (e *Environment) assignAt(distance int, name lexer.Token, value any) {
+  ancestor := e.ancestor(distance)
+  ancestor.objects[name.Lexeme] = value
+}
+
+func (e *Environment) ancestor(distance int) *Environment {
+  a := e
+  for range distance {
+    a = a.enclosing
+  }
+
+  return a
+}
+
 func (e *Environment) assign(name lexer.Token, value any) {
   if _, ok := e.objects[name.Lexeme]; ok {
     e.objects[name.Lexeme] = value
