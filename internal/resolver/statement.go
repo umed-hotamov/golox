@@ -40,10 +40,10 @@ func (r *Resolver) resolveFunction(statement ast.Function) {
 	r.declare(statement.Name)
 	r.define(statement.Name)
 
-  enclosingFunction := r.currentFunction
-  r.currentFunction = FUNCTION
+	enclosingFunction := r.currentFunction
+	r.currentFunction = FUNCTION
 
-	r.beginScope()  
+	r.beginScope()
 	for _, param := range statement.Params {
 		r.declare(param)
 		r.define(param)
@@ -51,7 +51,7 @@ func (r *Resolver) resolveFunction(statement ast.Function) {
 	r.Resolve(statement.Body.Statements)
 	r.endScope()
 
-  r.currentFunction = enclosingFunction
+	r.currentFunction = enclosingFunction
 }
 
 func (r *Resolver) resolveExpressionStatement(statement ast.Expression) {
@@ -72,9 +72,9 @@ func (r *Resolver) resolvePrint(statement ast.Print) {
 }
 
 func (r *Resolver) resolveReturn(statement ast.Return) {
-  if r.currentFunction == NONE {
-    r.error(statement.Keyword, "Can't return from top-level code")
-  }
+	if r.currentFunction == NONE {
+		r.error(statement.Keyword, "Can't return from top-level code")
+	}
 
 	if statement.Value != nil {
 		r.resolveExpression(statement.Value)
