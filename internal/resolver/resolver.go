@@ -8,20 +8,29 @@ import (
 	"github.com/umed-hotamov/golox/internal/lexer"
 )
 
+type FunctionType int
+
+const (
+  NONE      FunctionType = iota
+  FUNCTION
+) 
+
 type Resolver struct {
-	interpreter *interpreter.Interpreter
-	scopes      *Stack
-	hasError    bool
+	interpreter     *interpreter.Interpreter
+	scopes          *Stack
+  currentFunction FunctionType
+	HasError        bool
 }
 
 func NewResolver(interpreter *interpreter.Interpreter) *Resolver {
 	return &Resolver{
-		interpreter: interpreter,
-		scopes:      NewStack(),
+		interpreter:     interpreter,
+		scopes:          NewStack(),
+    currentFunction: NONE,
 	}
 }
 
-func (r *Resolver) resolve(statements []ast.Stmt) {
+func (r *Resolver) Resolve(statements []ast.Stmt) {
 	for _, statement := range statements {
 		r.resolveStatement(statement)
 	}
@@ -41,6 +50,10 @@ func (r *Resolver) declare(name lexer.Token) {
 	}
 
 	scope := r.scopes.Peek().(map[string]bool)
+  if _, ok := scope[name.Lexeme]; ok {
+    r.error(name, "Already variable with this name in this scope")
+  }
+
 	scope[name.Lexeme] = false
 }
 
@@ -65,5 +78,5 @@ func (r *Resolver) resolveLocal(expression ast.Expr, name lexer.Token) {
 
 func (r *Resolver) error(token lexer.Token, message string) {
 	fmt.Printf("[line: %d] Error: %s\n", token.Line, message)
-	r.hasError = true
+	r.HasError = true
 }
