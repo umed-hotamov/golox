@@ -9,6 +9,7 @@ import (
 	"github.com/umed-hotamov/golox/internal/interpreter"
 	"github.com/umed-hotamov/golox/internal/lexer"
 	"github.com/umed-hotamov/golox/internal/parser"
+	"github.com/umed-hotamov/golox/internal/resolver"
 )
 
 func main() {
@@ -66,6 +67,12 @@ func run(source string, interpreter *interpreter.Interpreter) {
     return
   }
   if parser.HasError {
+    return
+  }
+
+  resolver := resolver.NewResolver(interpreter)
+  resolver.Resolve(statements)
+  if resolver.HasError {
     return
   }
 
