@@ -89,13 +89,28 @@ func (i *Interpreter) evaluateBinary(expression ast.Binary) any {
 }
 
 func (i *Interpreter) evaluateVariable(expression ast.Variable) any {
-  return i.env.get(expression.Name)
+  return i.lookUpVariable(expression.Name, expression) 
+}
+
+func (i *Interpreter) lookUpVariable(name lexer.Token, expression ast.Expr) any {
+  distance, ok := i.locals[expression]
+  if ok {
+    return i.env.getAt(distance, name.Lexeme)
+  } 
+  
+  return i.globals.get(name)
 }
 
 func (i *Interpreter) evaluateAssign(expression ast.Assign) any {
   value := i.evaluate(expression.Value)
-  i.env.assign(expression.Name, value)
   
+  distance, ok := i.locals[expression]
+  if ok {
+    i.env.assignAt(distance, expression.Name, value)
+  } else {
+    i.globals.assign(expression.Name, value)
+  }
+
   return value
 }
 
