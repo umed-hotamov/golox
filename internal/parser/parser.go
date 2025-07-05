@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/umed-hotamov/golox/internal/lexer"
 	"github.com/umed-hotamov/golox/internal/ast"
+	"github.com/umed-hotamov/golox/internal/lexer"
 )
 
 type Parser struct {
@@ -39,10 +39,9 @@ func (p *Parser) declaration() ast.Stmt {
 	if p.match(lexer.FUN) {
 		return p.function("function")
 	}
-  if p.match(lexer.CLASS) {
-    return p.classDeclaration()
-  }
-
+	if p.match(lexer.CLASS) {
+		return p.classDeclaration()
+	}
 
 	return p.statement()
 }
@@ -56,7 +55,7 @@ func (p *Parser) varDeclaration() ast.Stmt {
 	}
 	p.acceptToken(lexer.SEMICOLON, "Expect ; after variable declaration")
 
-  return ast.Var{Name: *name, Initializer: initializer}
+	return ast.Var{Name: *name, Initializer: initializer}
 }
 
 func (p *Parser) function(kind string) ast.Stmt {
@@ -83,20 +82,20 @@ func (p *Parser) function(kind string) ast.Stmt {
 	p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before "+kind+" body")
 	body := p.block()
 
-  return ast.Function{Name: *name, Params: parameters, Body: ast.Block{Statements: body.Statements}}
+	return ast.Function{Name: *name, Params: parameters, Body: ast.Block{Statements: body.Statements}}
 }
 
 func (p *Parser) classDeclaration() ast.Stmt {
-  name := p.acceptToken(lexer.IDENTIFIER, "Expect class name")  
-  p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before class body")
+	name := p.acceptToken(lexer.IDENTIFIER, "Expect class name")
+	p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before class body")
 
-  var methods []ast.Function
-  for !p.check(lexer.RIGHT_BRACE) && !p.eof() {
-    methods = append(methods, p.function("method").(ast.Function))
-  }
-  p.acceptToken(lexer.RIGHT_BRACE, "Expect '}' after class body")
- 
-  return ast.Class{Name: *name, Methods: methods}
+	var methods []ast.Function
+	for !p.check(lexer.RIGHT_BRACE) && !p.eof() {
+		methods = append(methods, p.function("method").(ast.Function))
+	}
+	p.acceptToken(lexer.RIGHT_BRACE, "Expect '}' after class body")
+
+	return ast.Class{Name: *name, Methods: methods}
 }
 
 func (p *Parser) statement() ast.Stmt {
@@ -159,7 +158,7 @@ func (p *Parser) ifStatement() ast.Stmt {
 		elseBranch = p.statement()
 	}
 
-  return ast.If{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
+	return ast.If{Condition: condition, ThenBranch: thenBranch, ElseBranch: elseBranch}
 }
 
 func (p *Parser) whileStatement() ast.Stmt {
@@ -169,7 +168,7 @@ func (p *Parser) whileStatement() ast.Stmt {
 
 	body := p.statement()
 
-  return ast.While{Condition: condition, Body: body}
+	return ast.While{Condition: condition, Body: body}
 }
 
 func (p *Parser) forStatement() ast.Stmt {
@@ -198,15 +197,15 @@ func (p *Parser) forStatement() ast.Stmt {
 
 	body := p.statement()
 	if increment != nil {
-    body = ast.Block{Statements: []ast.Stmt{body, ast.Expression{Expression: increment}}}
+		body = ast.Block{Statements: []ast.Stmt{body, ast.Expression{Expression: increment}}}
 	}
 	if condition == nil {
-    condition = ast.Literal{Value: true}
+		condition = ast.Literal{Value: true}
 	}
-  body = ast.While{Condition: condition, Body: body}
+	body = ast.While{Condition: condition, Body: body}
 
 	if initializer != nil {
-    body = ast.Block{Statements: []ast.Stmt{initializer, body}}
+		body = ast.Block{Statements: []ast.Stmt{initializer, body}}
 	}
 
 	return body
@@ -221,7 +220,7 @@ func (p *Parser) returnStatement() ast.Stmt {
 	}
 	p.acceptToken(lexer.SEMICOLON, "Expect ';' after return value")
 
-  return ast.Return{Keyword: *keyword, Value: value}
+	return ast.Return{Keyword: *keyword, Value: value}
 }
 
 func (p *Parser) expression() ast.Expr {
@@ -238,7 +237,7 @@ func (p *Parser) assignment() ast.Expr {
 		switch expr.(type) {
 		case ast.Variable:
 			name := expr.(ast.Variable).Name
-      return ast.Assign{Name: name, Value: value}
+			return ast.Assign{Name: name, Value: value}
 		}
 
 		p.error(equals, errors.New("Invalid assignment target"))
@@ -253,7 +252,7 @@ func (p *Parser) or() ast.Expr {
 	for p.match(lexer.OR) {
 		operator := p.previous()
 		right := p.and()
-    expr = ast.Logical{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Logical{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -265,7 +264,7 @@ func (p *Parser) and() ast.Expr {
 	for p.match(lexer.AND) {
 		operator := p.previous()
 		right := p.equality()
-    expr = ast.Logical{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Logical{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -278,7 +277,7 @@ func (p *Parser) equality() ast.Expr {
 		operator := p.previous()
 		right := p.comprasion()
 
-    expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -291,7 +290,7 @@ func (p *Parser) comprasion() ast.Expr {
 		operator := p.previous()
 		right := p.term()
 
-    expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -304,7 +303,7 @@ func (p *Parser) term() ast.Expr {
 		operator := p.previous()
 		right := p.factor()
 
-    expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -317,7 +316,7 @@ func (p *Parser) factor() ast.Expr {
 		operator := p.previous()
 		right := p.unary()
 
-    expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
+		expr = ast.Binary{Left: expr, Operator: *operator, Right: right}
 	}
 
 	return expr
@@ -328,7 +327,7 @@ func (p *Parser) unary() ast.Expr {
 		operator := p.previous()
 		right := p.unary()
 
-    return ast.Unary{Operator: *operator, Right: right}
+		return ast.Unary{Operator: *operator, Right: right}
 	}
 
 	return p.call()
@@ -368,25 +367,25 @@ func (p *Parser) finishCall(callee ast.Expr) ast.Expr {
 	}
 	paren := p.acceptToken(lexer.RIGHT_PAREN, "Expect ')' after arguments")
 
-  return ast.Call{Callee: callee, Paren: *paren, Arguments: arguments}
+	return ast.Call{Callee: callee, Paren: *paren, Arguments: arguments}
 }
 
 func (p *Parser) primary() ast.Expr {
 	if p.match(lexer.TRUE) {
-    return ast.Literal{Value: true}
+		return ast.Literal{Value: true}
 	}
 	if p.match(lexer.FALSE) {
-    return ast.Literal{Value: false}
+		return ast.Literal{Value: false}
 	}
 	if p.match(lexer.NIL) {
-    return ast.Literal{Value: nil}
+		return ast.Literal{Value: nil}
 	}
 
 	if p.match(lexer.NUMBER, lexer.STRING) {
-    return ast.Literal{Value: p.previous().Literal}
+		return ast.Literal{Value: p.previous().Literal}
 	}
 	if p.match(lexer.IDENTIFIER) {
-    return ast.Variable{Name: *p.previous()}
+		return ast.Variable{Name: *p.previous()}
 	}
 
 	if p.match(lexer.LEFT_PAREN) {
