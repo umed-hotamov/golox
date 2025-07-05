@@ -24,7 +24,9 @@ func (i *Interpreter) execute(statement ast.Stmt) {
 		i.executeFunction(statement.(ast.Function))
 	case ast.Return:
 		i.executeReturn(statement.(ast.Return))
-	}
+  case ast.Class:
+    i.executeClass(statement.(ast.Class))
+  }
 }
 
 func (i *Interpreter) executeExpression(statement ast.Expression) {
@@ -90,4 +92,10 @@ func (i *Interpreter) executeReturn(statement ast.Return) {
 	}
 
 	panic(value)
+}
+
+func (i *Interpreter) executeClass(statement ast.Class) {
+  i.env.define(statement.Name.Lexeme, nil)
+  class := NewLoxClass(statement.Name.Lexeme)
+  i.env.assign(statement.Name, class)
 }
