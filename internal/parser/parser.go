@@ -36,6 +36,13 @@ func (p *Parser) declaration() ast.Stmt {
 	if p.match(lexer.VAR) {
 		return p.varDeclaration()
 	}
+	if p.match(lexer.FUN) {
+		return p.function("function")
+	}
+  if p.match(lexer.CLASS) {
+    return p.classDeclaration()
+  }
+
 
 	return p.statement()
 }
@@ -50,6 +57,46 @@ func (p *Parser) varDeclaration() ast.Stmt {
 	p.acceptToken(lexer.SEMICOLON, "Expect ; after variable declaration")
 
   return ast.Var{Name: *name, Initializer: initializer}
+}
+
+func (p *Parser) function(kind string) ast.Stmt {
+	name := p.acceptToken(lexer.IDENTIFIER, "Expect "+kind+" name")
+
+	p.acceptToken(lexer.LEFT_PAREN, "Expect ( after "+kind+" name")
+	var parameters []lexer.Token
+	if !p.check(lexer.RIGHT_PAREN) {
+		parameters = append(parameters, *p.acceptToken(lexer.IDENTIFIER, "Expect parameter name"))
+	}
+
+	for p.match(lexer.COMMA) {
+		parameters = append(parameters, *p.acceptToken(lexer.IDENTIFIER, "Expect parameter name"))
+		if len(parameters) > 255 {
+			p.error(p.peek(), errors.New("Can't have more than 255 parameters"))
+		}
+
+		if p.check(lexer.RIGHT_PAREN) {
+			break
+		}
+	}
+	p.acceptToken(lexer.RIGHT_PAREN, "Expect ')' after arguments")
+
+	p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before "+kind+" body")
+	body := p.block()
+
+  return ast.Function{Name: *name, Params: parameters, Body: ast.Block{Statements: body.Statements}}
+}
+
+func (p *Parser) classDeclaration() ast.Stmt {
+  name := p.acceptToken(lexer.IDENTIFIER, "Expect class name")  
+  p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before class body")
+
+  var methods []ast.Function
+  for !p.check(lexer.RIGHT_BRACE) && !p.eof() {
+    methods = append(methods, p.function("method").(ast.Function))
+  }
+  p.acceptToken(lexer.RIGHT_BRACE, "Expect '}' after class body")
+ 
+  return ast.Class{Name: *name, Methods: methods}
 }
 
 func (p *Parser) statement() ast.Stmt {
@@ -70,9 +117,6 @@ func (p *Parser) statement() ast.Stmt {
 	}
 	if p.match(lexer.RETURN) {
 		return p.returnStatement()
-	}
-	if p.match(lexer.FUN) {
-		return p.function("function")
 	}
 
 	return p.expressionStatement()
@@ -166,33 +210,6 @@ func (p *Parser) forStatement() ast.Stmt {
 	}
 
 	return body
-}
-
-func (p *Parser) function(kind string) ast.Stmt {
-	name := p.acceptToken(lexer.IDENTIFIER, "Expect "+kind+" name")
-
-	p.acceptToken(lexer.LEFT_PAREN, "Expect ( after "+kind+" name")
-	var parameters []lexer.Token
-	if !p.check(lexer.RIGHT_PAREN) {
-		parameters = append(parameters, *p.acceptToken(lexer.IDENTIFIER, "Expect parameter name"))
-	}
-
-	for p.match(lexer.COMMA) {
-		parameters = append(parameters, *p.acceptToken(lexer.IDENTIFIER, "Expect parameter name"))
-		if len(parameters) > 255 {
-			p.error(p.peek(), errors.New("Can't have more than 255 parameters"))
-		}
-
-		if p.check(lexer.RIGHT_PAREN) {
-			break
-		}
-	}
-	p.acceptToken(lexer.RIGHT_PAREN, "Expect ')' after arguments")
-
-	p.acceptToken(lexer.LEFT_BRACE, "Expect '{' before "+kind+" body")
-	body := p.block()
-
-  return ast.Function{Name: *name, Params: parameters, Body: ast.Block{Statements: body.Statements}}
 }
 
 func (p *Parser) returnStatement() ast.Stmt {
