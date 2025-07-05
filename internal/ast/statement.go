@@ -1,4 +1,4 @@
-package ast 
+package ast
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 )
 
 type Stmt interface {
-  Ast
+	Ast
 }
 
 type Expression struct {
@@ -50,8 +50,8 @@ type Return struct {
 }
 
 type Class struct {
-  Name    lexer.Token
-  Methods []Function 
+	Name    lexer.Token
+	Methods []Function
 }
 
 func (e Expression) Printer() string {
@@ -95,5 +95,5 @@ func (r Return) Printer() string {
 }
 
 func (c Class) Printer() string {
-  return fmt.Sprintf("class %v", c.Name.Lexeme)
+	return fmt.Sprintf("class %v", c.Name.Lexeme)
 }
