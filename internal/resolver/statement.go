@@ -19,8 +19,8 @@ func (r *Resolver) resolveStatement(statement ast.Stmt) {
 	case ast.While:
 		r.resolveWhile(statement.(ast.While))
 	case ast.Class:
-    r.resolveClass(statement.(ast.Class))
-  }
+		r.resolveClass(statement.(ast.Class))
+	}
 }
 
 func (r *Resolver) resolveBlock(statement ast.Block) {
@@ -89,6 +89,6 @@ func (r *Resolver) resolveWhile(statement ast.While) {
 }
 
 func (r *Resolver) resolveClass(statement ast.Class) {
-  r.declare(statement.Name)
-  r.define(statement.Name)
+	r.declare(statement.Name)
+	r.define(statement.Name)
 }
