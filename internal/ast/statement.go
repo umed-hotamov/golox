@@ -49,6 +49,11 @@ type Return struct {
 	Value   Expr
 }
 
+type Class struct {
+  Name    lexer.Token
+  Methods []Function 
+}
+
 func (e Expression) Printer() string {
 	return e.Expression.Printer() + ";"
 }
@@ -87,4 +92,8 @@ func (f Function) Printer() string {
 
 func (r Return) Printer() string {
 	return fmt.Sprintf("return %v", r.Value.Printer())
+}
+
+func (c Class) Printer() string {
+  return fmt.Sprintf("class %v", c.Name.Lexeme)
 }
